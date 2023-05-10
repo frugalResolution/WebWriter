@@ -1,0 +1,10 @@
+Installation:
+
+1.Unzip the Project Folder
+2.Open Terminal or Command Prompt(Cmd) inside the folder and Execute the Following Commands:
+
+-pip install -r requirements.txt
+-cd WebLetterManager
+-streamlit run Page-1.py
+
+Note: Make Sure Python is Installed in Your System and should be added to path Variables.
