@@ -1,56 +1,78 @@
 import streamlit as st
 import base64
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
-from reportlab.lib import colors
-from reportlab.lib.utils import ImageReader
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-import unicodedata
-from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.units import mm
-from reportlab.lib.enums import TA_CENTER
-from reportlab.platypus import Paragraph
+from reportlab.lib.units import mm, inch
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import Paragraph, Frame, KeepInFrame
+from reportlab.lib import colors
 
-# functions
+# Improved functions
 
 def register_fonts():
     pdfmetrics.registerFont(TTFont('DejaVuSans', 'fonts/DejaVuSans.ttf'))
     pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', 'fonts/DejaVuSans-Bold.ttf'))
     pdfmetrics.registerFont(TTFont('DejaVuSerif-Italic', 'fonts/DejaVuSerif-Italic.ttf'))
 
-def create_canvas(xValue,yValue,width,height,attributedText1, attributedText2,add_line,use_bold:False,use_italic:False):
+def add_paragraph(canvas, text, x, y, width, height, style):
+    frame = Frame(x, y, width, height, showBoundary=1)
+    story = [Paragraph(text, style)]
+    frame.addFromList([KeepInFrame(width, height, story)], canvas)
+
+def create_pdf(text_area1, text_area2, use_bold, use_italic, add_line, dark_mode):
     pdf_name = "example.pdf"
     c = canvas.Canvas(pdf_name, pagesize=A4)
     register_fonts()
-    if use_bold and use_italic:
-        regular_para1 = Paragraph(attributedText1, style=ParagraphStyle(name='BoldItalic', fontName='DejaVuSans-Bold', fontSize=14))
-        regular_para2 = Paragraph(attributedText2, style=ParagraphStyle(name='BoldItalic', fontName='DejaVuSans-Bold', fontSize=14))
-    elif use_bold:
-        regular_para1 = Paragraph(attributedText1, style=ParagraphStyle(name='Bold', fontName='DejaVuSans-Bold', fontSize=14))
-        regular_para2 = Paragraph(attributedText2, style=ParagraphStyle(name='Bold', fontName='DejaVuSans-Bold', fontSize=14))
-    elif use_italic:
-        regular_para1 = Paragraph(attributedText1, style=ParagraphStyle(name='Italic', fontName='DejaVuSerif-Italic', fontSize=14))
-        regular_para2 = Paragraph(attributedText2, style=ParagraphStyle(name='Italic', fontName='DejaVuSerif-Italic', fontSize=14))
-    else:
-        regular_para1 = Paragraph(attributedText1, style=ParagraphStyle(name='Regular', fontName='DejaVuSans', fontSize=14))
-        regular_para2 = Paragraph(attributedText2, style=ParagraphStyle(name='Regular', fontName='DejaVuSans', fontSize=14))
-    
-    regular_para1.wrapOn(c, width*inch, height*inch)
-    regular_para1.drawOn(c, xValue, yValue)
-    regular_para2.wrapOn(c, width*inch, height*inch)
-    regular_para2.drawOn(c, xValue, yValue-200)
+
+    style = ParagraphStyle(name='Regular', fontName='DejaVuSans', fontSize=14)
+    if use_bold:
+        style.fontName = 'DejaVuSans-Bold'
+    if use_italic:
+        style.fontName = 'DejaVuSerif-Italic'
+
+    if dark_mode:
+        c.setFillColor(colors.grey)
+        c.rect(0, 0, A4[0], A4[1], fill=1)
+        style.textColor = colors.whitesmoke
+
+    add_paragraph(c, text_area1, 100, 750, 400, 100, style)
+    add_paragraph(c, text_area2, 100, 600, 400, 100, style)
+
     if add_line:
-            c.setStrokeColor(colors.black)
-            c.setLineWidth(1)
-            c.line(100, 100, 500, 100)
+        c.setStrokeColor(colors.black)
+        c.line(100, 550, 500, 550)
+
     c.save()
     return pdf_name
+
+
+def register_fonts():
+    pdfmetrics.registerFont(TTFont('DejaVuSans', 'fonts/DejaVuSans.ttf'))
+    pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', 'fonts/DejaVuSans-Bold.ttf'))
+    pdfmetrics.registerFont(TTFont('DejaVuSerif-Italic', 'fonts/DejaVuSerif-Italic.ttf'))
+
+def create_canvas(xValue, yValue, width, height, attributedText1, attributedText2, add_line, use_bold=False, use_italic=False, dark_mode=False):
+    pdf_name = "example.pdf"
+    c = canvas.Canvas(pdf_name, pagesize=A4)
+    register_fonts()
+
+    # Set background for dark mode
+    if dark_mode:
+        c.setFillColor(colors.black)
+        c.rect(0, 0, A4[0], A4[1], fill=1)
+
+    # Set text color based on dark mode
+    text_color = colors.whitesmoke if dark_mode else colors.black
+
+    # Adjust the rest of your function to use `text_color` for the text
+
+    # Your existing logic for creating the content...
+
+    c.save()
+    return pdf_name
+
 
 st.set_page_config(
     page_title="Text Editor to PDF",
@@ -85,3 +107,11 @@ if btn:
         )
         
 
+
+# Dark Mode Toggle
+dark_mode = st.checkbox("Dark Mode", key="dark_mode")
+
+# Generate PDF button action
+if btn:
+    pdf_name = create_canvas(100, 750, 6, 5, text_area1, text_area2, add_line, use_bold, use_italic, dark_mode)  # Pass `dark_mode` here
+    # The rest of your logic for displaying and downloading the PDF

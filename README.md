@@ -4,6 +4,18 @@
 
 ## Getting started
 
+Installation:
+
+1.Unzip the Project Folder
+2.Open Terminal or Command Prompt(Cmd) inside the folder and Execute the Following Commands:
+
+`pip install -r requirements.txt`
+`cd App`
+`streamlit run Page-1.py`
+
+Note: Make Sure Python is Installed in Your System and should be added to path Variables.
+
+
 To make it easy for you to get started with GitLab, here's a list of recommended next steps.
 
 Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
